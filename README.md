@@ -1,2 +1,1 @@
 # Pattys
-E-commerce app
