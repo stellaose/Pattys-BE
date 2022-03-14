@@ -141,13 +141,13 @@ const UserController = {
             const match = await bcrypt.compare(password, user.password);
 
             if(match){
-                return res
-                        .status(200)
-                        .json({
-                            _id: user._id,
-                            firstname: user.firstname,
-                            avatar: user.avatar
-                        })
+                return res.json({
+                    status: 200,
+                    message: "Login successful",
+                    _id: user._id,
+                    firstname: user.firstname,
+                    avatar: user.avatar
+                })
             }
 
             if (!match) {
