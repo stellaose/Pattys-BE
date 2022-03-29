@@ -9,6 +9,7 @@ export const NavBarContainer = styled.div`
     position: relative;
     padding: 0.5rem 2rem;
     background-color: #F4EAE6;
+    z-index: 100;
 
         @media(max-width: 768px){
             justify-content: space-between;
@@ -90,9 +91,10 @@ export const NavBarRightMenu = styled.div`
 `
 
 export const NavBarDropNav = styled.div`
-    position: relative;
+    padding: 1px;
     background: transparent;
-    // padding: 1px 0;
+    position: relative;
+    z-index: 40;
 
         a{
             text-transform: capitalize;
@@ -106,32 +108,31 @@ export const NavBarDropNav = styled.div`
             margin-right: 0.3rem;
         }
 
-        div{
+       div{
             position: absolute;
-            display: none;
             background: #F4EAE6;
             margin-left: 0.5rem;
             margin-top: 0.2rem;
-            width: 6rem;
-            height: 4rem;
+            width: 5rem;
+            height: 5rem;
             box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-            z-index: 99;
-        }
-
-        &:hover div{
-            display: block;
+            z-index: 99; 
         }
 `
 
 export const NavBarDropdown = styled.ul`
-    display: block; 
+    display: block;
+
+     &:first-child {
+        padding-top: 0.8em;
+    }
 
         li{
             padding-top: 0.5rem;
             list-style-type: none;
             margin-bottom: 2px;
-            margin-left: 0.5rem;
-        }
+            margin-left: 0.1rem;
+        } 
 `
 
 export const NavBarSearch = styled.input.attrs(props => ({

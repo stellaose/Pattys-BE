@@ -6,7 +6,7 @@ import sendMail from '../Utils/SendMail.js';
 import sendMailer from '../Utils/Mailer.js';
 import validateEmail from '../Utils/ValidateEmail.js';
 import validatePassword from '../Utils/ValidatePassword.js';
-import { createActivationToken, createAccessToken, createRefreshToken } from '../Utils/GenerateToken.js'
+import { createActivationToken, createAccessToken, createRefreshToken, generateToken } from '../Utils/GenerateToken.js'
 
 dotenv.config();
 const { CLIENT_URL} = process.env
@@ -146,6 +146,7 @@ const UserController = {
                     message: "Login successful",
                     _id: user._id,
                     firstname: user.firstname,
+                    lastname: user.lastname,
                     avatar: user.avatar
                 })
             }
@@ -161,7 +162,7 @@ const UserController = {
             res.cookie('refreshtoken', refresh_token, {
                 httpOnly: true,
                 path: '/user/refresh_token',
-                maxAge: 7*24*60*60*1000 // 7 days
+                maxAge: 1*24*60*60*1000 //! 1 day
             })
 
             res.json({

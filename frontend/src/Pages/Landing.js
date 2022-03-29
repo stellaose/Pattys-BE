@@ -1,11 +1,16 @@
 import React from 'react'
 import Hero from '../Components/Hero'
 
+import { LandingBody } from '../Stylesheets/landing.styled'
+
 const Landing = () => {
   return (
-    <div>
+    <>
+      <LandingBody>
         <Hero />
-    </div>
+      </LandingBody>
+        
+    </>
   )
 }
 

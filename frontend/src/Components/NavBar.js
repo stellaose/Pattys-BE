@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import LogoutAction from '../Redux/Actions/LogoutAction'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingBag, faBars, faXmark, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 import { 
         NavBarContainer, 
+        NavBarDropdown,
+        NavBarDropNav,
         NavBarExtended,
         NavBarExtendedLink,
         NavBarLeftMenu,
@@ -16,9 +20,49 @@ import {
 
 const NavBar = () => {
 
-    const [ status, setStatus ] = useState(false)
+    const auth = useSelector((state) => state.login || {});
 
-    const location = useLocation()
+    const {user, isLoggedIn } = auth;
+
+    const [ status, setStatus ] = useState(false);
+    const [ dropdown, setDropdown ] = useState(false)
+
+    const location = useLocation();
+    const dispatch = useDispatch();
+
+
+    const refreshPage = (e) => {
+        e.preventDefault();
+        dispatch(LogoutAction());
+        window.location.reload(false);
+      }
+
+      const handleDrop = () => {
+          setDropdown(!dropdown);
+      }
+
+    const UserLink = () => {
+        return <NavBarDropNav onClick={handleDrop}>
+            <Link to="#" >
+                <img src={user.avatar} alt=""/> {user.firstname} <FontAwesomeIcon icon={faChevronDown} size={'sm'} />
+            </Link>
+
+            {dropdown && (
+                <div>
+                    <NavBarDropdown>
+                        <li><Link to="/profile">Profile</Link></li>
+                        <li><Link to="/" onClick={refreshPage}>Logout</Link></li>
+                    </NavBarDropdown>   
+                </div>
+            )}
+            
+        </NavBarDropNav>
+    }
+
+    const transForm = {
+        transform: isLoggedIn ? "translateY(0px)" : 0
+    }
+
   return (
     <>
         <NavBarContainer>
@@ -37,26 +81,15 @@ const NavBar = () => {
                 </Link>
             </NavBarMenu>
 
-            <NavBarRightMenu >
+            <NavBarRightMenu style = {transForm}>
                 <NavBarSearch/>
                 
                 <Link to = 'cart'>
                     <FontAwesomeIcon icon={faShoppingBag} size={'lg'} />
                 </Link> 
 
-                {location.pathname === "/login" ? (
-                    <Link to="/register">
-                        Register
-                    </Link>
-                ) : (
-                    <Link to="/login">
-                        Login
-                    </Link>
-                    )
-                }
-
-                {/*  {
-                    isAuthenticated ? UserLink() :  location.pathname === "/login" ? (
+                 {
+                    isLoggedIn ? UserLink() :  location.pathname === "/login" ? (
                         <Link to="/register">
                             Register
                         </Link>
@@ -65,7 +98,7 @@ const NavBar = () => {
                             Login
                         </Link>
                     )
-                } */}
+                }
 
             </NavBarRightMenu>
 
@@ -93,8 +126,8 @@ const NavBar = () => {
                             </Link>
                         </NavBarExtendedLink>
                         <NavBarExtendedLink>
-                            {/* * {
-                                isAuthenticated ? UserLink() :  location.pathname === "/login" ? (
+                            * {
+                                isLoggedIn ? UserLink() :  location.pathname === "/login" ? (
                                     <Link to="/register">
                                         Register
                                     </Link>
@@ -103,19 +136,7 @@ const NavBar = () => {
                                         Login
                                     </Link>
                                 )
-                            } */}
-
-                            {location.pathname === "/login" ? (
-                                <Link to="/register">
-                                    Register
-                                </Link>
-                            ) : (
-                                <Link to="/login">
-                                    Login
-                                </Link>
-                                )
                             }
-
 
                         </NavBarExtendedLink>
                     </NavBarExtended>

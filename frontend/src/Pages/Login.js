@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux'
+import LoginAction from '../Redux/Actions/LoginAction';
 import Fade from 'react-reveal/Fade'
 import { ErrMessage, SuccessMessage } from '../Utils/Notification'
 
@@ -23,24 +24,31 @@ const Login = () => {
                         }
     const [ user, setUser ] = useState(initialState)
 
-    const { email, password, err, success } = user
+    const { email, password, err, success } = user;
+    
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleInput = (e) => {
         const { name, value } = e.target;
-        setUser({...user, [name]:value, err: '', success: ''})
+        setUser({
+            ...user, 
+            [name]:value, 
+            err: '', 
+            success: ''
+        })
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('user/login', {email, password});
 
-           console.log(res);
-           setUser({
-                    ...user,
-                    err:'',
-                    success: res.data.message 
-                })
+            dispatch(LoginAction(email, password, navigate))
+        //    setUser({
+        //             ...user,
+        //             err:'',
+        //             success: ''
+        //         })
         } catch (err) {
             err.res.data.message &&
             setUser({
@@ -97,7 +105,7 @@ const Login = () => {
                     </Link>
                 </LoginPass> 
 
-                <LoginButton type='submit' >
+                <LoginButton type='submit' onClick={LoginAction}>
                     Login
                 </LoginButton>
 
