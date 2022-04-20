@@ -20,7 +20,7 @@ const sendEmail = (to, url, txt) => {
         refresh_token: process.env.REFRESH_TOKEN
     });
 
-    const accessToken = oauth2Client.getAccessToken();
+    // const accessToken = oauth2Client.getAccessToken();
     const smtpTransport = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -29,7 +29,7 @@ const sendEmail = (to, url, txt) => {
             clientId: process.env.CLIENT_ID,
             clientSecret: process.env.CLIENT_SECRET,
             refreshToken: process.env.REFRESH_TOKEN,
-            accessToken
+            accessToken: process.env.ACCESS_TOKEN
         }
     });
 
@@ -39,26 +39,24 @@ const sendEmail = (to, url, txt) => {
         to: to,
         subject: 'Pattys',
         html: `
-            <div style = "max-width: 700px; margin: auto; border: 10px solid #9C6C4A; padding: 50px 20px; font-size: 110%">
-                <h2 style = "text-align: center; text-transform: uppercase; color: #D0B16A"> Welcome to Pattys</h2>
+            <div style = "max-width: 80%; margin: 4rem auto; border: 10px solid #4297A0; border-radius: 40px; padding: 50px 20px; font-size: 110%">
+                <h2 style = "text-align: center; text-transform: uppercase; color: #2F5061">Pattys</h2>
                 <p>
-                    Congratulations! You are almost ready to shop from Pattys Place
-                    Just click the button below to validate your email address.
+                    You requested for a password reset. If this was you, Please click the button or link below.
                 </p>
                     
-                <a href=${url} style="background: #6A6932; text-decoration: none; color: white; padding: 10px 20px; margin: 10px 0; display: inline-block;">${txt}</a>
-                
-                <p>If the button doesn't work for any reason, you can also click on the link below:</p>
-                
+                <a href=${url} style="background: none; text-decoration: none; color: #E57F84; padding: 10px 20px; margin: 10px 0; display: inline-block; border: 1px solid #B52B40">${txt}</a>
                 <div>${url}</div>
+                <p>Otherwise ignore</p>
+                
             </div>
         `
     }
 
     smtpTransport.sendMail(mailOptions, (err, info) => {
-        if(err) return err
+        if(err) return err;
         return info
     });
 }
 
-export default sendEmail;
+export default sendEmail

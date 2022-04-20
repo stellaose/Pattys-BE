@@ -26,20 +26,32 @@ const userSchema = new Schema(
         },
         password: {
             type: String,
-            required: [true, 'Please enter your password']
+            required: [true, 'Please enter your password'],
+            select: false
         },
         confirmPassword: {
             type: String,
-            required: [true, 'Please enter your password']
+            required: [false, 'Please enter your password']
         },
         role: {
-            type: Number,
-            default: 0 // 0 = user, 1 = admin
-        },
-        avatar: {
             type: String,
-            default: 'https://res.cloudinary.com/stellaose/image/upload/v1646934366/user-3297_vxpaxr.svg'
-        }
+            default: 'user',
+            enum:['user','admin']
+        },
+        avatar: [ 
+            {
+                public_id: {
+                    type: String,
+                    required: true
+                },
+                url: {
+                    type: String,
+                    required: true
+                }
+            }
+        ],
+        resetPasswordToken: String,
+        resetPasswordExpire: Date
     },
         {timestamps: true}
 )

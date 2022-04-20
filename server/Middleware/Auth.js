@@ -1,32 +1,36 @@
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
-import ErrorResponse from '../Utils/ErrorHandler.js'
+import ErrorResponse from '../Utils/ErrorHandler.js';
+import { User } from '../Models/UserModel.js';
 
 dotenv.config()
 
-const auth = (req, res, next) => {
-    try {
-        const token = req.header('Authorization')
+export const Auth = async (req, res, next) => {
+    const { token } = req.cookies;
 
-        if(!token){
-            return next
-                (new ErrorResponse('Invalid Authentication token', 400))
-        }
-
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-            if(err){
-                return next
-                    (new ErrorResponse('Invalid token', 400))
-            }
-
-            req.user = user
-            next();
-        })
-    } catch (err) {
-        console.log(err)
+    if(!token){
         return next
-            (new ErrorResponse('Server error', 500))        
+            (new ErrorResponse('Invalid Authentication token', 400));
     }
+        
+    const decodedData = jwt.verify(token, process.env.SECRET);
+        
+    req.savedUser = await User.findById(decodedData.userid);
+        
+    next();
 }
 
-export default auth;
+export const AllowedRoles = (...roles) => {
+
+    return (req,res,next) => {
+
+        const {savedUser} = req;
+
+        if(!roles.includes(savedUser.role)){
+            return next
+                (new ErrorResponse(`Role ${savedUser.role} is not allowed to access this resource`,401));
+        }
+
+        next();
+    }
+}

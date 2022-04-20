@@ -42,19 +42,13 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-
             dispatch(LoginAction(email, password, navigate))
-        //    setUser({
-        //             ...user,
-        //             err:'',
-        //             success: ''
-        //         })
         } catch (err) {
             err.res.data.message &&
             setUser({
                 ...user,
                 err: err.res.data.message, 
-                success: '' 
+                success: ''
               })
         }
     }

@@ -1,30 +1,31 @@
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import fileupload from 'express-fileupload';
+import app from './app.js';
+import databaseConnection from './Database/index.js';
+import dotenv from 'dotenv'
 
-import UserRoute from './Routes/UserRoute.js';
-import UploadRoute from './Routes/Upload.js';
+dotenv.config();
 
-const app = express();
+const port = process.env.PORT || 3500;
 
-app.use(cookieParser());
-app.use(fileupload({
-    useTempFiles: true
-}));
+// Handling uncaught exception
+process.on('uncaughtException', (err) => {
+    console.log(`Error: ${err.message}`);
+    console.log('Shutting down the server due to uncaught exception');
+    process.exit(1)
+})
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+databaseConnection.getConnect();
 
-app.get('/', (req, res) => {
-    res.json({
-        status: 'Success',
-        message: 'Hello world'
+const server = app.listen(port, () => {
+    console.log(`Server listening at https://localhost:${port}`
+    );
+}); 
+
+// Unhandled promise rejection
+process.on('unhandledRejection', (err) => {
+    console.log(`Error: ${err.message}`);
+    console.log('Shutting down the server due to unhandled rejection');
+
+    server.close(() => {
+        process.exit(1);
     });
-});
-
-app.use('/user', UserRoute);
-app.use('/api', UploadRoute);
-
-export default app;
+})

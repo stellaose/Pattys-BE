@@ -3,10 +3,9 @@ import { LoginType } from "../Type"
 const savedUser = JSON.parse(localStorage.getItem("userToken") || "{}")
 
 const initialState = {
-    isLoggedIn : !!savedUser?._id,
-    user: {},
+    user: [],
     isLoading: false,
-    error: {},
+    isLoggedIn: false,
     isAdmin: false,
     ...savedUser
 }
@@ -17,7 +16,7 @@ const LoginReducer = (state = initialState, action) => {
             return {  
                 ...state, 
                 isLoading: true,
-                isLoggedIn: false
+                isLoggedIn: false,
           };
             
         case LoginType.LOGIN_SUCCESS:
@@ -28,19 +27,26 @@ const LoginReducer = (state = initialState, action) => {
                 user: action.payload
             }
 
-            case LoginType.LOGIN_FAIL:
-                return { 
-                        ...state, 
-                        isLoading: false, 
-                        isLoggedIn: false,
-                        error: action.payload 
-                    };
+        case LoginType.LOGIN_FAIL:
+            return { 
+                ...state, 
+                isLoading: false, 
+                isLoggedIn: false,
+                error: action.payload 
+            };
             
-            case LoginType.LOGOUT:
-                return {
-                        isLoggedIn: false,
-                        isLoading: false
-                    };
+        case LoginType.LOGOUT:
+            return {
+                isLoggedIn: false,
+                isLoading: false
+            };
+        case LoginType.GET_USER:
+            return {
+                ...state,
+                user: action.payload.user,
+                isAdmin: action.payload.isAdmin
+            }
+        
         default:
             return state
     }

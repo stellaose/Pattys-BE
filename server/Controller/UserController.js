@@ -1,272 +1,206 @@
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { User } from '../Models/UserModel.js';
-import sendMail from '../Utils/SendMail.js';
-import sendMailer from '../Utils/Mailer.js';
+import ErrorResponse from '../Utils/ErrorHandler.js'
+import sendEmail from '../Utils/SendEmail.js';
 import validateEmail from '../Utils/ValidateEmail.js';
 import validatePassword from '../Utils/ValidatePassword.js';
-import { createActivationToken, createAccessToken, createRefreshToken, generateToken } from '../Utils/GenerateToken.js'
+import GenerateToken  from '../Utils/GenerateToken.js';
+import { createAccessToken, createActivationToken } from '../Utils/Tokens.js';
 
 dotenv.config();
-const { CLIENT_URL} = process.env
 
 const UserController = {
-    register: async (req, res) => {
+    register: async (req, res, next) => {
         try{
-            const { firstname, lastname, email, password, confirmPassword } = req.body;
+            const { firstname, lastname, email, password } = req.body;
 
-            if(!firstname || !lastname || !email || !password || !confirmPassword ){
-                return res.json({
-                    status: 400,
-                    message: "Please fill all fields"
-                })
+            if(!firstname || !lastname || !email || !password ){
+                return next
+                    (new ErrorResponse('Please fill all fields', 400));
+                
             }
             if(!validateEmail(email)){
-                return res.json({
-                    status: 400,
-                    message: "Please enter a valid email"
-                })
+                return next
+                    (new ErrorResponse('Please enter a valid email', 400))
             }
+
             if(!validatePassword(password)){
-                return res.json({
-                            status: 400,
-                            message: "Please enter a valid password"
-                        })
+                 return next
+                    (new ErrorResponse('Please enter a valid password', 400))
             }
+
             if(password.length < 7){
-                return res.json({
-                            status: 400,
-                            message: "Password must not be less than 7 characters"
-                        })
-            }
-            if(password !== confirmPassword){
-                return res.json({
-                            status: 400,
-                            message: "Password mismatch. Please try again"
-                        })
+                return next
+                    (new ErrorResponse('Password must not be less than 7 characters', 400))    
             }
 
             const findUser = await User.findOne({email})
-
+            
             if(findUser){
-                return res.json({
-                        status: 400,
-                        message: "This email exist already Please log in now"
-                    })
+                return next
+                    (new ErrorResponse('This email exist already Please log in now.', 400))  
             }
 
             const salt = bcrypt.genSaltSync(10);
             const hashPassword = bcrypt.hashSync(password,  salt);
-            const hashedPassword = bcrypt.hashSync(confirmPassword,  salt);
 
 
-                const newUser = { 
-                                    firstname, 
-                                    lastname, 
-                                    email, 
-                                    password: hashPassword, 
-                                    confirmPassword: hashedPassword
-                                    };
+            if(hashPassword){
+                const savedUser = await User.create({ 
+                    firstname, 
+                    lastname, 
+                    email, 
+                    password: hashPassword, 
+                    avatar: {
+                        public_id: 'public_id',
+                        url: 'this is a sample url',
+                    },
+                });
+               
+                const payload = {userid: savedUser._id};
 
-            const activation_token = createActivationToken(newUser);
+                const authToken = jwt.sign(payload,process.env.SECRET,{expiresIn: '7d'})
 
-            const url = `${CLIENT_URL}/user/activate/${activation_token}`
-            sendMail(email, url, "Verify your email address");
-            
-            res.json({message: 'Register success!!! Please activate your email to start'})
+                GenerateToken(savedUser, 200, res, authToken)
+            } 
         } 
         catch(err) {
-            console.log(err);
-            return res.json({
-                        status: 500,
-                        message: "Server error"
-                    })
+            return next (err) 
         }
     },
 
-    activateEmail: async(req, res) => {
-        try{
-            const { activation_token } = req.body;
-            const user = jwt.verify(activation_token, process.env.ACTIVATION_TOKEN_SECRET);
-
-            const { firstname, lastname, email, password, confirmPassword} = user;
-
-            const check = await User.findOne({email});
-            if(check){
-                return res.json({
-                    status: 400,
-                    message: "This email already exist. Please log in"
-                })
-            }
-            const newUser = new User({
-                firstname, lastname, email, password, confirmPassword
-            });
-
-            await newUser.save();
-            res.json({
-                status: 200,
-                message: 'This email has been activated successfully'
-            })
-        }
-        catch(err) {
-            console.log(err);
-            return res.json({
-                        status: 500,
-                        message: "Server error"
-                    })
-        }
-    },
-
-    login: async (req, res) => {
+    login: async (req, res, next) => {
         try {
             const { email, password } = req.body;
             
             if(!email || !password) {
-                return res
-                            .json({
-                                status: 400,
-                                message: "All fields must be provided"
-                            })
+                return next 
+                    (new ErrorResponse("All fields must be provided", 400))
             }
            
-            const user = await User.findOne({ email })
-          
-            if(!user) {
-                return res.json({
-                    status: 400,
-                    message: "This email does not exist. Please sign up"
-                })
-            }
-            const match = await bcrypt.compare(password, user.password);
+            const savedUser = await User.findOne({ email }).select("+password");
 
-            if(match){
-                return res.json({
-                    status: 200,
-                    message: "Login successful",
-                    _id: user._id,
-                    firstname: user.firstname,
-                    lastname: user.lastname,
-                    avatar: user.avatar
-                })
+            if(!savedUser) {
+                return next 
+                    (new ErrorResponse("This email does not exist. Please sign up", 400))
             }
+            
+            const match = await bcrypt.compare(password, savedUser.password);
 
             if (!match) {
-                return res.json({
-                    status: 400,
-                    message: "Password is incorrect"
-                })
+                return next 
+                    (new ErrorResponse("Password is incorrect", 400))
             }
 
-            const refresh_token = createRefreshToken({id: user._id})
-            res.cookie('refreshtoken', refresh_token, {
-                httpOnly: true,
-                path: '/user/refresh_token',
-                maxAge: 1*24*60*60*1000 //! 1 day
-            })
+            const payload = {
+                userid: savedUser._id
+            }
+            const authToken = jwt.sign(payload, process.env.SECRET,{expiresIn: '7d'})
 
-            res.json({
-                status: 200,
-                message: "Login success!"})
-        }
-        catch(err) {
-            console.log(err);
-            return res.json({
-                        status: 500,
-                        message: "Server error"
-                    })
+            GenerateToken(savedUser, 200, res, authToken)
+        } catch(err) {
+            return next (err) 
         }
     },
 
-    getAccessToken: async (req, res) => {
-        try {
-            const rf_token = req.cookies.refreshtoken;
+    forgetPassword: async (req, res, next) => {
+        const {email} = req.body;
 
-            if(!rf_token){
-                return res.json({
-                    status: 400,
-                    message: "You are not logged in. Please log in now"
-                })
+        try{
+            const savedUser = await User.findOne({email});
+
+            if(!savedUser){
+                return next 
+                    (new ErrorResponse('This email does not exist', 401))
             }
 
-            jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-                if(err){
-                    return res.json({
-                                    status: 400,
-                                    message: "You are not logged in. Please log in now"
-                                })
+          // * Generate token
+          const resetToken = crypto.randomBytes(20).toString('hex');
+
+          // + Hash and set to resetPasswordToken
+          savedUser.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  
+          // - Set token expire time
+          savedUser.resetPasswordExpire = Date.now() + 30 * 60 * 1000
+  
+          await savedUser.save({validateBeforeSave: false});
+  
+          // ; create password reset url
+          const url = `${req.protocol}://${req.get(
+            "host"
+          )}/v1/user/reset-password/${resetToken}`;
+  
+          try {
+              await sendEmail( 
+                email, 
+                url, 
+                "Reset your password"
+                )
+  
+              res.json({
+                  status: 200,
+                  success: true,
+                  message: `Email sent to ${savedUser.email}`
+              })
+          } catch (error) {
+              savedUser.resetPasswordToken = undefined;
+              savedUser.resetPasswordExpire = undefined;
+  
+              await savedUser.save({validateBeforeSave: false})
+              return next
+                (new ErrorResponse(error.message,500))
+        }
+
+        }catch(err) {
+            return next (err) 
+        }
+    },
+   
+    resetPassword: async (req, res, next) => {
+
+        const {token} = req.params;
+        const {password,confirmPassword} = req.body;
+
+        try {
+              // Hash URL token
+            const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex')
+
+            const savedUser = await User.findOne({
+                resetPasswordToken,
+                resetPasswordExpire: { $gt: Date.now() }
+            })
+
+            if(!savedUser){
+                return next
+                    (new ErrorResponse('Password reset token is invalid or has expired. Please try again.', 400))
                 }
 
-                const access_token = createAccessToken({id: user.id});
-
-                res.json({
-                        status: 200,
-                        access_token
-                    });
-            })
-        }
-        catch(err) {
-            console.log(err);
-            return res.json({
-                status: 500,
-                message: "Server error"
-            })
-        }
-    },
-
-    forgetPassword: async (req, res) => {
-        try{
-            const {email} = req.body;
-            const user = await User.findOne({email});
-            if(!user){
-                return res.json({
-                    status: 400,
-                    message: "This email does not exist"
-                })
+            if (password !== confirmPassword) {
+                return next
+                    (new ErrorResponse('Passwords do not match.', 400))
             }
 
-            const access_token = createAccessToken({id: user._id});
-            const url = `${CLIENT_URL}/user/reset/${access_token}`
+            // Setup new password
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password,salt);
 
-            sendMailer(email, url, "Reset your password");
-            res.json({
-                status: 200,
-                message: "To create a new password, please check your email."
-            })
-        }
-        catch(err) {
-            console.log(err);
-            return res.json({
-                        status: 500,
-                        message: "Server error"
-                    })
-        }
-    },
+            savedUser.password = hashedPassword;
 
-    resetPassword: async (req, res) => {
-        try {
-            const { password, confirmPassword } = req.body;
+            savedUser.resetPasswordToken = undefined;
+            savedUser.resetPasswordExpire = undefined;
 
-            const salt = bcrypt.genSaltSync(12);
-            const hashPassword = bcrypt.hashSync(password, salt);
-            const hashedPassword = bcrypt.hashSync(confirmPassword, salt);
+            await savedUser.save();
 
+            const payload = {userid: savedUser._id}
+            const authToken = await jwt.sign(payload,process.env.SECRET,{expiresIn: '7d'})
 
-            await User.findOneAndUpdate({_id: req.user.id}, { 
-                password: hashPassword,
-                confirmPassword: hashedPassword
-            })
-            res.json({
-                status: 200,
-                message: 'Password has been changed successfully'
-            })
+            GenerateToken(savedUser, 200,res,authToken)
         } 
-        catch (err) {
-            console.log(err);
-            return res.json({
-                        status: 500,
-                        message: "Server error"
-                    })
+         catch(err) {
+            return next (err) 
         }
     },
 
@@ -279,28 +213,20 @@ const UserController = {
 
             res.json(user)
         } 
-        catch (err) {
-            console.log(err);
-            return res.json({
-                status: 500,
-                message: "Server error"
-            })
+         catch(err) {
+            return next (err) 
         }
     },
 
-    getUserAllInfo: async (req, res) => {
+    getUserAllInfo: async (req, res, next) => {
         try {
             const user = await User.find()
                                     .select('-password')
                                     .select('-confirmPassword')
                                     .exec()
             res.json(user)
-        } catch (err) {
-            console.log(err);
-            return res.json({
-                        status: 500,
-                        message: "Server error"
-                    })          
+        }catch(err) {
+            return next (err) 
         }
     },
 
@@ -319,10 +245,8 @@ const UserController = {
                 status: 200,
                 message: "Updated Successfully"
             })
-        } catch (err) {
-            console.log(err);
-            return next 
-                (new ErrorResponse('Server error', 500))
+        }catch(err) {
+            return next (err) 
         }
     },
 
@@ -338,29 +262,24 @@ const UserController = {
                 status: 200,
                 message: "Updated Successfully"
             })
-        } catch (err) {
-            console.log(err);
-            return next
-                (new ErrorResponse('Server error', 500))
+        }catch(err) {
+            return next (err) 
         }
     },
 
     logout: async (req, res, next) => {
         try {
-            res.clearCookie('refreshtoken', {
-                path: '/user/refresh_token',
-            })
+            res.cookie("token", null, {
+                expires: new Date(Date.now()),
+                httpOnly: true,
+              });
 
             res.json({
                 status: 200,
                 message: 'Logged out successfully'
             })
-        } catch (err) {
-            console.log(err);
-            return res.json({
-                        status: 500,
-                        message: "Server error"
-                    })
+        }catch(err) {
+            return next (err) 
         }
     },
 
@@ -372,12 +291,8 @@ const UserController = {
                 status: 200,
                 message: 'Deleted successfully'
             })
-        } catch (err) {
-            console.log(err);
-            return res.json({
-                        status: 500,
-                        message: "Server error"
-                    })
+        }catch(err) {
+            return next (err) 
         }
     }
 }

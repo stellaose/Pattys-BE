@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import LogoutAction from '../Redux/Actions/LogoutAction'
+import LogoutAction from '../../Redux/Actions/LogoutAction'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingBag, faBars, faXmark, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
@@ -16,7 +16,7 @@ import {
         NavBarMenu,
         NavBarRightMenu,
         NavBarSearch,
-        OpenLinksButton } from '../Stylesheets/navbar.styled.js'
+        OpenLinksButton } from '../../Stylesheets/navbar.styled'
 
 const NavBar = () => {
 
@@ -31,7 +31,7 @@ const NavBar = () => {
     const dispatch = useDispatch();
 
 
-    const refreshPage = (e) => {
+    const handleLogout = (e) => {
         e.preventDefault();
         dispatch(LogoutAction());
         window.location.reload(false);
@@ -51,7 +51,7 @@ const NavBar = () => {
                 <div>
                     <NavBarDropdown>
                         <li><Link to="/profile">Profile</Link></li>
-                        <li><Link to="/" onClick={refreshPage}>Logout</Link></li>
+                        <li><Link to="/" onClick={handleLogout}>Logout</Link></li>
                     </NavBarDropdown>   
                 </div>
             )}

@@ -2,7 +2,7 @@ import './App.css';
 import { Routes, Route} from 'react-router-dom';
 import Landing from './Pages/Landing';
 import Login from './Pages/Login';
-import NavBar from './Components/NavBar';
+import NavBar from './Components/NavBar/NavBar';
 import Profile from './Pages/Profile'
 import Register from './Pages/Register'
 
