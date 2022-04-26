@@ -203,21 +203,6 @@ const UserController = {
         }
     },
 
-    getUserInfo: async (req, res, next) => {
-        try {
-            const savedUser = await User.findById(req.savedUser.id)
-
-            res.json({
-                status: 200,
-                success: true,
-                savedUser
-            })
-        } 
-         catch(error) {
-            return next (error) 
-        }
-    },
-
     updatePassword: async (req, res, next) => {
         const { password, newPassword, confirmPassword } = req.body;
 
@@ -250,33 +235,30 @@ const UserController = {
         }
     },
 
-    getUserAllInfo: async (req, res, next) => {
-        try {
-            const user = await User.find()
-                                    .select('-password')
-                                    .select('-confirmPassword')
-                                    .exec()
-            res.json(user)
-        }catch(err) {
-            return next (err) 
-        }
-    },
-
     updateUser: async (req, res, next) => {
-        try {
-            const {firstname, lastname, email, avatar} = req.body;
 
-            await User.findOneAndUpdate({_id: req.user.id}, {
-                firstname, 
+        const {firstname, lastname, email} = req.body;
+
+        try {
+            const newUser = {
+                firstname,
                 lastname,
-                email, 
-                avatar
-            })
-                
+                email
+            }
+
+            const savedUser = await User.findByIdAndUpdate(req.savedUser.id, newUser, {
+                new: true,
+                runValidators: true,
+                useFindAndModify: false,
+              });
+
             res.json({
                 status: 200,
-                message: "Updated Successfully"
-            })
+                success: true,
+                message: "Profile updated successfully",
+                savedUser
+              })
+
         }catch(err) {
             return next (err) 
         }
@@ -293,6 +275,37 @@ const UserController = {
             res.json({
                 status: 200,
                 message: "Updated Successfully"
+            })
+        }catch(err) {
+            return next (err) 
+        }
+    },
+
+    UserInfo: async (req, res, next) => {
+        try {
+            const savedUser = await User.findById(req.savedUser.id)
+
+            res.json({
+                status: 200,
+                success: true,
+                savedUser
+            })
+        } 
+         catch(error) {
+            return next (error) 
+        }
+    },
+
+    AllUserInfo: async (req, res, next) => {
+        try {
+            const allUser = await User.find()
+                                    .select('-password')
+                                    .select('-confirmPassword')
+                                    .exec()
+            res.json({
+                status: 200,
+                success: true,
+                allUser
             })
         }catch(err) {
             return next (err) 

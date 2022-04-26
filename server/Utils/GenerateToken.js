@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import { generateToken } from './Tokens.js'
 
 dotenv.config();
 
