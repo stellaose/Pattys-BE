@@ -3,8 +3,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const createActivationToken = () => {
-    return jwt.sign({ _id: _id }, process.env.ACTIVATION_TOKEN_SECRET, {expiresIn: '1h'})
+export const createActivationToken = (savedUser) => {
+    return jwt.sign({ id: savedUser._id }, process.env.ACTIVATION_TOKEN_SECRET, {expiresIn: '1h'})
 }
 
 export const createAccessToken = (payload) => {
@@ -14,3 +14,19 @@ export const createAccessToken = (payload) => {
 export const createRefreshToken = (payload) => {
     return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '2d'})
 }
+
+export const generateToken = (savedUser) => {
+        return jwt.sign({
+            id: savedUser._id,
+            firstname: savedUser.firstname,
+            lastname: savedUser.lastname,
+            username: savedUser.username,
+            email: savedUser.email,
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: '1d'
+        }
+        )
+    }
+    

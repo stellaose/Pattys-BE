@@ -10,7 +10,7 @@ export const Auth = async (req, res, next) => {
 
     if(!token){
         return next
-            (new ErrorResponse('Invalid Authentication token', 400));
+            (new ErrorResponse('Please login to access this resource', 400));
     }
         
     const decodedData = jwt.verify(token, process.env.SECRET);

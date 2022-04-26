@@ -8,7 +8,6 @@ import sendEmail from '../Utils/SendEmail.js';
 import validateEmail from '../Utils/ValidateEmail.js';
 import validatePassword from '../Utils/ValidatePassword.js';
 import GenerateToken  from '../Utils/GenerateToken.js';
-import { createAccessToken, createActivationToken } from '../Utils/Tokens.js';
 
 dotenv.config();
 
@@ -67,8 +66,8 @@ const UserController = {
                 GenerateToken(savedUser, 200, res, authToken)
             } 
         } 
-        catch(err) {
-            return next (err) 
+        catch(error) {
+            return next (error) 
         }
     },
 
@@ -101,13 +100,13 @@ const UserController = {
             const authToken = jwt.sign(payload, process.env.SECRET,{expiresIn: '7d'})
 
             GenerateToken(savedUser, 200, res, authToken)
-        } catch(err) {
-            return next (err) 
+        } catch(error) {
+            return next (error) 
         }
     },
 
     forgetPassword: async (req, res, next) => {
-        const {email} = req.body;
+        const { email } = req.body;
 
         try{
             const savedUser = await User.findOne({email});
@@ -154,15 +153,15 @@ const UserController = {
                 (new ErrorResponse(error.message,500))
         }
 
-        }catch(err) {
-            return next (err) 
+        }catch(error) {
+            return next (error) 
         }
     },
    
     resetPassword: async (req, res, next) => {
 
-        const {token} = req.params;
-        const {password,confirmPassword} = req.body;
+        const { token } = req.params;
+        const { password, confirmPassword } = req.body;
 
         try {
               // Hash URL token
@@ -199,22 +198,55 @@ const UserController = {
 
             GenerateToken(savedUser, 200,res,authToken)
         } 
-         catch(err) {
-            return next (err) 
+         catch(error) {
+            return next (error) 
         }
     },
 
     getUserInfo: async (req, res, next) => {
         try {
-            const user = await User.findById(req.user.id)
-                                    .select('-password')
-                                    .select('-confirmPassword')
-                                    .exec();
+            const savedUser = await User.findById(req.savedUser.id)
 
-            res.json(user)
+            res.json({
+                status: 200,
+                success: true,
+                savedUser
+            })
         } 
-         catch(err) {
-            return next (err) 
+         catch(error) {
+            return next (error) 
+        }
+    },
+
+    updatePassword: async (req, res, next) => {
+        const { password, newPassword, confirmPassword } = req.body;
+
+        try{
+            const savedUser = await User.findById(req.savedUser.id).select("+password");
+
+            const isMatch = await bcrypt.compare(password, savedUser.password);
+
+            if (!isMatch) {
+                return next
+                    (new ErrorResponse("Old password is incorrect", 400));
+            }
+          
+            if (newPassword !== confirmPassword) {
+                return next
+                    (new ErrorResponse("password does not match", 400));
+            }
+
+            const salt = bcrypt.genSaltSync(10);
+            const hashPassword = bcrypt.hashSync(newPassword, salt);
+          
+            savedUser.password = hashPassword;
+          
+            await savedUser.save();
+          
+            GenerateToken(savedUser, 200, res);
+
+        } catch(error){
+            return next(error)
         }
     },
 

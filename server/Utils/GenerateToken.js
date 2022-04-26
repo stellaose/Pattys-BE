@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { generateToken } from './Tokens.js'
 
 dotenv.config();
 
@@ -24,17 +25,3 @@ const GenerateToken = (savedUser, statusCode, res, token) => {
 export default GenerateToken
 
 
-// export const generateToken = (user) => {
-//     return jwt.sign({
-//         id: user._id,
-//         firstname: user.firstname,
-//         lastname: user.lastname,
-//         username: user.username,
-//         email: user.email,
-//     },
-//     process.env.REFRESH_TOKEN_SECRET,
-//     {
-//         expiresIn: '2d'
-//     }
-//     )
-// }
