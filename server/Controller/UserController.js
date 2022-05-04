@@ -264,22 +264,6 @@ const UserController = {
         }
     },
 
-    updateUserRole: async (req, res, next) => {
-        try {
-            const { role } = req.body;
-
-            await User.findOneAndUpdate({_id: req.params.id}, {
-                role
-            })
-
-            res.json({
-                status: 200,
-                message: "Updated Successfully"
-            })
-        }catch(err) {
-            return next (err) 
-        }
-    },
 
     UserInfo: async (req, res, next) => {
         try {
@@ -296,6 +280,25 @@ const UserController = {
         }
     },
 
+    SingleUser: async (req, res, next) => {
+        try{
+            const oneUser = await User.findById(req.params.id);
+
+            if(!oneUser){
+                return next
+                    (new ErrorResponse(`User with id ${req.params.id} does not exist`, 400))
+            }
+
+            return res.json({
+                status: 200,
+                success: true,
+                oneUser
+            })
+        } catch(err){
+            return next (err)
+        }
+    },
+
     AllUserInfo: async (req, res, next) => {
         try {
             const allUser = await User.find()
@@ -307,6 +310,35 @@ const UserController = {
                 success: true,
                 allUser
             })
+        }catch(err) {
+            return next (err) 
+        }
+    },
+
+    updateUserRole: async (req, res, next) => {
+
+        const { firstname, lastname, email, role } = req.body;
+
+        try {
+            const newUser = {
+                firstname,
+                lastname,
+                email, 
+                role
+            }
+
+            const savedUser = await User.findByIdAndUpdate(req.params.id, newUser, {
+                new: true,
+                runValidators: true,
+                useFindAndModify: false,
+              });
+
+            res.json({
+                status: 200,
+                success: true,
+                message: "User role updated successfully",
+                savedUser
+              })
         }catch(err) {
             return next (err) 
         }
@@ -330,11 +362,16 @@ const UserController = {
 
     deleteUser: async (req, res, next) => {
         try {
-            await User.findByIdAndDelete(req.params.id);
+            const oneProfile = await User.findByIdAndDelete(req.params.id);
+
+            if(!oneProfile){
+                return next
+                    (new ErrorResponse(`User with id ${req.params.id} does not exist`, 400))
+            }
 
             res.json({
                 status: 200,
-                message: 'Deleted successfully'
+                message: 'User deleted successfully'
             })
         }catch(err) {
             return next (err) 

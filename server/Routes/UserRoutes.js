@@ -6,22 +6,21 @@ const router = Router();
 
 router.post('/register', UserController.register);
 router.post('/login', UserController.login);
-
+router.get('/logout', UserController.logout);
 
 router.post('/forget-password', UserController.forgetPassword);
 router.put('/reset-password/:token',  UserController.resetPassword);
 
+// * authentication routes
 router.put('/update-password', Auth, UserController.updatePassword);
 router.put('/me/update', Auth, UserController.updateUser);
-router.put('/update_role/:id', Auth, UserController.updateUserRole);
-
 router.get('/me', Auth, UserController.UserInfo);
-router.get('/all-user', Auth, UserController.AllUserInfo);
 
-router.delete('/delete/:id', Auth, UserController.deleteUser);
-
-router.get('/logout', UserController.logout);
-
+// ! admin routes
+router.get('/admin/single-user/:id', Auth, AllowedRoles("admin"), UserController.SingleUser);
+router.get('/admin/all-user', Auth, AllowedRoles("admin"), UserController.AllUserInfo);
+router.put('/admin/update-role/:id', Auth, AllowedRoles("admin"), UserController.updateUserRole);
+router.delete('/admin/delete-user/:id', Auth, AllowedRoles("admin"), UserController.deleteUser);
 
 
 export default router;

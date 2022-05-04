@@ -8,9 +8,12 @@ const router = Router();
 router.get('/one-product/:id', ProductController.getProduct);
 router.get('/all-products',  ProductController.getAllProducts);
 
+// - review routes
+router.put('/review/create-review', Auth, ProductController.createProductReview);
+
 // * admin routes
-router.post('/create-product', Auth, AllowedRoles("admin"), ProductController.createProduct);
-router.put('/update-product/:id', Auth, AllowedRoles("admin"), ProductController.updateProduct);
-router.delete('/delete-product/:id', Auth, AllowedRoles("admin"), ProductController.deleProduct);
+router.post('/admin/create-product', Auth, AllowedRoles("admin"), ProductController.createProduct);
+router.put('/admin/update-product/:id', Auth, AllowedRoles("admin"), ProductController.updateProduct);
+router.delete('/admin/delete-product/:id', Auth, AllowedRoles("admin"), ProductController.deleProduct);
 
 export default router;

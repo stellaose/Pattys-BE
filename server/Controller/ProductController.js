@@ -120,6 +120,55 @@ const ProductController = {
             return next
                 (new ErrorResponse('Server error', 500))
         }
+    },
+
+    createProductReview : async (req, res, next) => {
+        const { rating, comment, productId } = req.body;
+
+        const review = {
+            user: req.savedUser._id,
+            name: req.savedUser.firstname,
+            rating: Number(rating),
+            comment,
+        };
+
+            
+        try{
+            const product = await Product.findById(productId);
+
+            const isReviewed = product.reviews.find(
+                (rev) => rev.user.toString() === req.savedUser._id.toString()
+              );
+
+              console.log(req.savedUser._id)
+
+            if(isReviewed) {
+                product.reviews.forEach((rev) => {
+                    if (rev.user.toString() === req.savedUser._id.toString())
+                    (rev.rating = rating), (rev.comment = comment);
+                });
+            } else {
+                product.reviews.push(review);
+                product.numOfReviews = product.reviews.length;
+            }
+
+            let avg = 0;
+
+            product.ratings = product.reviews.forEach((rev) => {
+                avg += rev.rating;
+            }) / product.reviews.length
+
+            const savedProduct = await product.save({validateBeforeSave: false});
+
+            res.json({
+                status:200,
+                success: true,
+                savedProduct
+              });
+            
+        } catch(err){
+            return next (err)
+        }
     }
 }
 
