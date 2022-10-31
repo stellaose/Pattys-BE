@@ -6,11 +6,5 @@
         "Orbitron",
         "refreshtoken",
         "Xmark"
-    ],
-
-    "workbench.colorCustomizations": {
-        "activityBar.background": "#2F5061",
-        "titleBar.activeBackground": "#2F5061",
-        "titleBar.activeForeground": "#F4EAE6"
-    }
+    ]
 }
