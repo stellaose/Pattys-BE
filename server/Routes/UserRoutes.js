@@ -4,6 +4,7 @@ import { Auth, AllowedRoles }  from '../Middleware/Auth.js';
 
 const router = Router();
 
+// * /v1/user
 router.post('/register', UserController.register);
 router.post('/login', UserController.login);
 router.get('/logout', UserController.logout);

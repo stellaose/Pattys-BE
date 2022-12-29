@@ -16,6 +16,7 @@ app.use(fileupload({
     useTempFiles: true
 }));
 
+
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended: true})); // * to handle url encoded data
