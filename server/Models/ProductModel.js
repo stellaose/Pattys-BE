@@ -42,7 +42,7 @@ const productSchema = new Schema(
         },
         color: {
             type: String,
-            required: [true, 'Please Enter Color']
+            required: [true, 'Please Enter Product color']
         },
         stock: {
             type: String,
