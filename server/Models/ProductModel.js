@@ -12,10 +12,19 @@ const productSchema = new Schema(
         size: {
             type: String,
         },
-        description: {
-            type: String,
-            required: [ true, 'Please Enter Product Description']
-        },
+        description: [
+            {
+                head: {
+                    type: String,
+                    required: false
+                },
+                details: {
+                    type: String,
+                    required: [true, 'Please enter description heading']
+                }
+               
+            }
+        ],
         price: {
             type: String,
             required: [true, 'Please Enter Product Price']
@@ -40,10 +49,7 @@ const productSchema = new Schema(
             type: String ,
             required: [true, 'Please Enter Product Category']
         },
-        color: {
-            type: String,
-            required: [true, 'Please Enter Product color']
-        },
+        color: [String],
         stock: {
             type: String,
             required: [true, 'Please Enter product Stock'],
