@@ -9,6 +9,9 @@ const productSchema = new Schema(
             required: [ true, 'Please Enter Product Name '],
             trim: true
         },
+        size: {
+            type: String,
+        },
         description: {
             type: String,
             required: [ true, 'Please Enter Product Description']
@@ -36,6 +39,10 @@ const productSchema = new Schema(
         category: {
             type: String ,
             required: [true, 'Please Enter Product Category']
+        },
+        color: {
+            type: String,
+            required: [true, 'Please Enter Color']
         },
         stock: {
             type: String,
