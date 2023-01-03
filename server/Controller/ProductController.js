@@ -1,6 +1,7 @@
 import { Product } from '../Models/ProductModel.js';
 import ErrorResponse from '../Utils/ErrorHandler.js';
 import ApiFeatures from '../Utils/ApiFeatures.js';
+import { Order } from '../Models/OrderModel.js';
 
 const ProductController = {
 
@@ -25,12 +26,12 @@ const ProductController = {
     updateProduct: async (req, res, next ) => {
         try{
             const productUpdate = await Product.findByIdAndUpdate(
-                                            req.params.id, 
-                                            req.body, {
-                                                new: true,
-                                                runValidator: true,
-                                                useFindAndModify: false
-                                            });
+                                req.params.id, 
+                                req.body, {
+                                    new: true,
+                                    runValidator: true,
+                                    useFindAndModify: false
+                                });
     
             if(!productUpdate){
                 return next
@@ -51,8 +52,11 @@ const ProductController = {
     },
 
     getProduct: async (req, res, next) => {
+        
         try{
             const oneProduct = await Product.findById(req.params.id);
+            
+            const getOrder = await Order.findById()
 
             if(!oneProduct){
                 return next

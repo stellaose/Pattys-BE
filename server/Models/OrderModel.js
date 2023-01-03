@@ -50,7 +50,7 @@ const orderSchema = new Schema(
                     type: String,
                     required: true,
                 },
-                product: {
+                productId: {
                     type: mongoose.Schema.ObjectId,
                     ref: "Product",
                     required: true,
@@ -77,22 +77,22 @@ const orderSchema = new Schema(
             required: true,
         },
         itemsPrice: {
-            type: Number,
+            type: String,
             required: true,
             default: 0,
         },
         taxPrice: {
-            type: Number,
+            type: String,
             required: true,
             default: 0,
         },
         shippingPrice: {
-            type: Number,
+            type: String,
             required: true,
             default: 0,
         },
         totalPrice: {
-            type: Number,
+            type: String,
             required: true,
             default: 0,
         },
