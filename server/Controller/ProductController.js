@@ -78,7 +78,7 @@ const ProductController = {
     getAllProducts: async (req, res, next) => {
         try{
 
-            const resultPerPage = 12;
+            const resultPerPage = 5;
             const countProduct = await Product.countDocuments()
 
             const apiFeature = new ApiFeatures(Product.find(), req.query)
