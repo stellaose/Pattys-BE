@@ -93,7 +93,8 @@ const ProductController = {
                     status: 200,
                     success: true,
                     findProduct,
-                    countProduct
+                    countProduct,
+                    resultPerPage
                 })
             }
         } catch(err){

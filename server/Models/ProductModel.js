@@ -19,7 +19,7 @@ const productSchema = new Schema(
                     required: false
                 },
                 details: {
-                    type: String,
+                    type: [String],
                     required: [true, 'Please enter description heading']
                 }
                
@@ -45,6 +45,10 @@ const productSchema = new Schema(
                 }
             }
         ],
+        sale: {
+          type: String,
+          required: true
+        },
         category: {
             type: String ,
             required: [true, 'Please Enter Product Category']
