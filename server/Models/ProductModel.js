@@ -26,8 +26,9 @@ const productSchema = new Schema(
             }
         ],
         price: {
-            type: String,
-            required: [true, 'Please Enter Product Price']
+            type: Number,
+            required: [true, "Please Enter Product Price"],
+            maxLength: [8, "Price cannot exceed 8 characters"],
         },
         ratings: {
             type: Number,

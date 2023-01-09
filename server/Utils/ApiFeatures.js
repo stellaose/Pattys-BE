@@ -19,7 +19,7 @@ class ApiFeatures {
     }
 
     filter(){
-        const queryCopy = {... this.queryStr};
+        const queryCopy = {...this.queryStr};
 
         console.log(queryCopy);
 
