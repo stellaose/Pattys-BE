@@ -79,27 +79,33 @@ const ProductController = {
         try{
 
             const resultPerPage = 12;
-            const countProduct = await Product.countDocuments()
+            const countProduct = await Product.countDocuments();
 
             const apiFeature = new ApiFeatures(Product.find(), req.query)
                 .search()
                 .filter()
-                .pagination(resultPerPage);
-
+                
+            apiFeature.pagination(resultPerPage)
+            
             let findProduct = await apiFeature.query
-
+            
+            let filteredProductCount = findProduct.length;
+            
+            findProduct = await apiFeature.query.clone()
+            
             if(findProduct){
                 return res.json({
                     status: 200,
                     success: true,
                     findProduct,
                     countProduct,
-                    resultPerPage
+                    resultPerPage,
+                    filteredProductCount
                 })
             }
         } catch(err){
             console.log(err);
-            return next
+              return next
                 (new ErrorResponse('Server error', 500))
         }
     },
