@@ -7,6 +7,7 @@ const router = Router();
 // * /v1/user
 router.post('/register', UserController.register);
 router.post('/login', UserController.login);
+router.post('/google-login', UserController.googleLogin)
 router.get('/logout', UserController.logout);
 
 router.post('/forget-password', UserController.forgetPassword);

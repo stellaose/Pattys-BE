@@ -26,10 +26,10 @@ const UserController = {
                     (new ErrorResponse('Please enter a valid email', 400))
             }
 
-            if(!validatePassword(password)){
-                 return next
-                    (new ErrorResponse('Please enter a valid password', 400))
-            }
+            // if(!validatePassword(password)){
+            //      return next
+            //         (new ErrorResponse('Please enter a valid password', 400))
+            // }
 
             if(password.length < 7){
                 return next
@@ -103,6 +103,10 @@ const UserController = {
         } catch(error) {
             return next (error) 
         }
+    },
+    
+    googleLogin: async (req, res, next) => {
+      
     },
 
     forgetPassword: async (req, res, next) => {
@@ -267,12 +271,12 @@ const UserController = {
 
     UserInfo: async (req, res, next) => {
         try {
-            const savedUser = await User.findById(req.savedUser.id)
+            const thisUser = await User.findById(req.savedUser.id)
 
             res.json({
                 status: 200,
                 success: true,
-                savedUser
+                thisUser
             })
         } 
          catch(error) {
