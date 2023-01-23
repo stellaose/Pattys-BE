@@ -55,7 +55,7 @@ const UserController = {
                     password: hashPassword, 
                     avatar: {
                         public_id: 'public_id',
-                        url: 'this is a sample url',
+                        url: 'https://res.cloudinary.com/stellaose/image/upload/v1673976402/avatar_etkgih.png',
                     },
                 });
                
