@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { User } from '../Models/UserModel.js';
 import ErrorResponse from '../Utils/ErrorHandler.js'
+import cloudinary from 'cloudinary'
 import sendEmail from '../Utils/SendEmail.js';
 import validateEmail from '../Utils/ValidateEmail.js';
 import validatePassword from '../Utils/ValidatePassword.js';
@@ -12,97 +13,97 @@ import GenerateToken  from '../Utils/GenerateToken.js';
 dotenv.config();
 
 const UserController = {
-    register: async (req, res, next) => {
-        try{
-            const { firstname, lastname, email, password } = req.body;
+  register: async (req, res, next) => {
+    try{
+      const { firstname, lastname, email, password } = req.body;
 
-            if(!firstname || !lastname || !email || !password ){
-                return next
-                    (new ErrorResponse('Please fill all fields', 400));
+      if(!firstname || !lastname || !email || !password ){
+        return next
+          (new ErrorResponse('Please fill all fields', 400));
                 
-            }
-            if(!validateEmail(email)){
-                return next
-                    (new ErrorResponse('Please enter a valid email', 400))
-            }
+        }
+        if(!validateEmail(email)){
+          return next
+            (new ErrorResponse('Please enter a valid email', 400))
+        }
 
             // if(!validatePassword(password)){
             //      return next
             //         (new ErrorResponse('Please enter a valid password', 400))
             // }
 
-            if(password.length < 7){
-                return next
-                    (new ErrorResponse('Password must not be less than 7 characters', 400))    
-            }
-
-            const findUser = await User.findOne({email})
-            
-            if(findUser){
-                return next
-                    (new ErrorResponse('This email exist already Please log in now.', 400))  
-            }
-
-            const salt = bcrypt.genSaltSync(10);
-            const hashPassword = bcrypt.hashSync(password,  salt);
-
-
-            if(hashPassword){
-                const savedUser = await User.create({ 
-                    firstname, 
-                    lastname, 
-                    email, 
-                    password: hashPassword, 
-                    avatar: {
-                        public_id: 'public_id',
-                        url: 'https://res.cloudinary.com/stellaose/image/upload/v1673976402/avatar_etkgih.png',
-                    },
-                });
-               
-                const payload = {userid: savedUser._id};
-
-                const authToken = jwt.sign(payload,process.env.SECRET,{expiresIn: '7d'})
-
-                GenerateToken(savedUser, 200, res, authToken)
-            } 
-        } 
-        catch(error) {
-            return next (error) 
+        if(password.length < 7){
+          return next
+            (new ErrorResponse('Password must not be less than 7 characters', 400))    
         }
+
+        const findUser = await User.findOne({email})
+            
+        if(findUser){
+          return next
+            (new ErrorResponse('This email exist already Please log in now.', 400))  
+        }
+
+        const salt = bcrypt.genSaltSync(10);
+        const hashPassword = bcrypt.hashSync(password,  salt);
+
+
+        if(hashPassword){
+          const savedUser = await User.create({ 
+            firstname, 
+            lastname, 
+            email, 
+            password: hashPassword, 
+            avatar: {
+              public_id: 'public_id',
+              url: 'https://res.cloudinary.com/stellaose/image/upload/v1673976402/avatar_etkgih.png',
+            },
+          });
+               
+          const payload = {userid: savedUser._id};
+
+          const authToken = jwt.sign(payload,process.env.SECRET,{expiresIn: '7d'})
+
+          GenerateToken(savedUser, 200, res, authToken)
+        } 
+    } 
+      catch(error) {
+        return next (error) 
+      }
     },
 
-    login: async (req, res, next) => {
-        try {
-            const { email, password } = req.body;
+  login: async (req, res, next) => {
+    try {
+      const { email, password } = req.body;
             
-            if(!email || !password) {
-                return next 
-                    (new ErrorResponse("All fields must be provided", 400))
-            }
+      if(!email || !password) {
+        return next 
+          (new ErrorResponse("All fields must be provided", 400))
+      }
            
-            const savedUser = await User.findOne({ email }).select("+password");
+      const savedUser = await User.findOne({ email }).select("+password");
 
-            if(!savedUser) {
-                return next 
-                    (new ErrorResponse("This email does not exist. Please sign up", 400))
-            }
+      if(!savedUser) {
+        return next 
+          (new ErrorResponse("This email does not exist. Please sign up", 400))
+      }
             
-            const match = await bcrypt.compare(password, savedUser.password);
+      const match = await bcrypt.compare(password, savedUser.password);
 
-            if (!match) {
-                return next 
-                    (new ErrorResponse("Password is incorrect", 400))
-            }
+      if (!match) {
+        return next 
+          (new ErrorResponse("Password is incorrect", 400))
+      }
 
-            const payload = {
-                userid: savedUser._id
-            }
-            const authToken = jwt.sign(payload, process.env.SECRET,{expiresIn: '7d'})
+      const payload = {
+        userid: savedUser._id
+      }
+      const authToken = jwt.sign(payload, process.env.SECRET,{expiresIn: '7d'})
 
-            GenerateToken(savedUser, 200, res, authToken)
-        } catch(error) {
-            return next (error) 
-        }
+      GenerateToken(savedUser, 200, res, authToken)
+    } catch(error) {
+        return next (error) 
+      }
     },
     
     googleLogin: async (req, res, next) => {
@@ -248,6 +249,26 @@ const UserController = {
                 firstname,
                 lastname,
                 email
+            }
+            
+            if(req.body.avatar !== ''){
+              const savedUser = await User.findById(req.savedUser.id)
+              
+              const imageId = savedUser.avatar[0].public_id
+              
+              await cloudinary.v2.uploader.destroy(imageId)
+              
+              const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+                folder: 'avatar',
+                width: 150,
+                height:150,
+                crop: 'scale'
+              })
+              
+              newUser.avatar = {
+                public_id: myCloud.public_id,
+                url: myCloud.secure_url
+              }
             }
 
             const savedUser = await User.findByIdAndUpdate(req.savedUser.id, newUser, {

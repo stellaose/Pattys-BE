@@ -16,6 +16,7 @@ router.put('/reset-password/:token',  UserController.resetPassword);
 // * authentication routes
 router.put('/update-password', Auth, UserController.updatePassword);
 router.put('/me/update', Auth, UserController.updateUser);
+
 router.get('/me', Auth, UserController.UserInfo);
 
 // ! admin routes
