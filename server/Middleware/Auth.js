@@ -1,36 +1,39 @@
-import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken';
-import ErrorResponse from '../Utils/ErrorHandler.js';
-import { User } from '../Models/UserModel.js';
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+import ErrorResponse from "../Utils/ErrorHandler.js";
+import { User } from "../Models/UserModel.js";
 
-dotenv.config()
+dotenv.config();
 
 export const Auth = async (req, res, next) => {
-    const { token } = req.cookies;
+  const bearerTokenFromHeader = req.headers.authorization;
 
-    if(!token){
-        return next
-            (new ErrorResponse('Please login to access this resource', 400));
-    }
-        
-    const decodedData = jwt.verify(token, process.env.SECRET);
-        
-    req.savedUser = await User.findById(decodedData.userid);
-        
-    next();
-}
+  //   const { token } = req.cookies;
+
+  if (!bearerTokenFromHeader) {
+    return next(new ErrorResponse("Please login to access this resource", 400));
+  }
+
+  const decodedData = jwt.verify(bearerTokenFromHeader, process.env.SECRET);
+
+  req.savedUser = await User.findById(decodedData.userid);
+
+  next();
+};
 
 export const AllowedRoles = (...roles) => {
+  return (req, res, next) => {
+    const { savedUser } = req;
 
-    return (req,res,next) => {
-
-        const {savedUser} = req;
-
-        if(!roles.includes(savedUser.role)){
-            return next
-                (new ErrorResponse(`Role ${savedUser.role} is not allowed to access this resource`,401));
-        }
-
-        next();
+    if (!roles.includes(savedUser.role)) {
+      return next(
+        new ErrorResponse(
+          `Role ${savedUser.role} is not allowed to access this resource`,
+          401
+        )
+      );
     }
-}
+
+    next();
+  };
+};
