@@ -23,7 +23,7 @@ cloudinary.config({
 databaseConnection.getConnect();
 
 const server = app.listen(port, () => {
-    console.log(`Server listening at https://localhost:${port}`
+    console.log(`Server listening at http://localhost:${port}`
     );
 }); 
 

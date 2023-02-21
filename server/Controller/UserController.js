@@ -133,9 +133,15 @@ const UserController = {
       await savedUser.save({validateBeforeSave: false});
   
       // ? create password reset url
-      const url = `${req.protocol}://${req.get(
-        "host"
-      )}/v1/user/reset-password/${resetToken}`;
+      // const url = `${req.protocol}://${req.get(
+      //   "host"
+      // )}/v1/user/reset-password/${resetToken}`;
+      
+      // const url = `${req.protocol}://${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+      
+      const url = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+      
+      
   
       try {
         await sendEmail( 
