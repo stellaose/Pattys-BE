@@ -48,12 +48,10 @@ const orderSchema = new Schema(
         },
         image: {
           type: String,
-          required: true,
         },
         productId: {
           type: mongoose.Schema.ObjectId,
           ref: "Product",
-          required: true,
         },
       },
     ],
