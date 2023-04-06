@@ -56,7 +56,7 @@ const productSchema = new Schema(
     },
     color: [String],
     stock: {
-      type: String,
+      type: Number,
       required: [true, 'Please Enter product Stock'],
       maxLength: [4, 'Length cannot exceed 4 characters'],
       default: 1

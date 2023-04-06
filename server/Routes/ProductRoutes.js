@@ -5,7 +5,7 @@ import { Auth, AllowedRoles }  from '../Middleware/Auth.js';
 const router = Router();
 
 // + user routes 
-// v1/product
+// v1/production
 router.get('/one-product/:id', ProductController.getProduct);
 router.get('/all-products',  ProductController.getAllProducts);
 
