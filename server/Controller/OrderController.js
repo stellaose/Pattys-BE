@@ -6,7 +6,7 @@ import ErrorResponse from '../Utils/ErrorHandler.js';
 const updateStock = async (id, quantity) => {
   const product = await Product.findById(id);
 
-  product.Stock -= quantity;
+  product.stock -= quantity;
   
   await product.save({ validateBeforeSave: false });
 }
