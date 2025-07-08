@@ -3,7 +3,7 @@ import databaseConnection from './Database/index.js';
 import cloudinary from 'cloudinary'
 import dotenv from 'dotenv'
 
-dotenv.config();
+dotenv.config({quiet: true});
 
 const port = process.env.PORT || 3500;
 

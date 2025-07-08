@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const db = `mongodb+srv://${process.env.DB_DATABASE}:${process.env.DB_PASSWORD}@${process.env.DB_USER}.y9jncnc.mongodb.net/?retryWrites=true&w=majority&appName=${process.env.DB_APP_NAME}`;
 

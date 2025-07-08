@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import ErrorResponse from "../Utils/ErrorHandler.js";
 import { User } from "../Models/UserModel.js";
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 export const Auth = async (req, res, next) => {
   const bearerTokenFromHeader = req.headers.authorization;

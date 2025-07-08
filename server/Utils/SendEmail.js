@@ -1,24 +1,24 @@
 import nodemailer from "nodemailer";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const sendEmail = async (to, url, txt) => {
-    const transporter = nodemailer.createTransport({
-        service: process.env.SMTP_SERVICE,
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
-        },
-    });
+  const transporter = nodemailer.createTransport({
+    service: process.env.SMTP_SERVICE,
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
 
-    const mailOptions = { 
-        from: process.env.SMTP_NAME,
-        to: to,
-        subject: 'Pattys',
-        html: `
+  const mailOptions = {
+    from: process.env.SMTP_NAME,
+    to: to,
+    subject: "Pattys",
+    html: `
             <div style = "max-width: 700px; margin: 40px auto; border: 1px solid #F05D23; border-radius: 10px; padding: 50px 20px; font-size: 110%">
                 <h2 style = "text-align: center; text-transform: uppercase; color: #260C1A; font-weight: 700">Pattys</h2>
                 <p>
@@ -31,10 +31,10 @@ const sendEmail = async (to, url, txt) => {
                 <p>Otherwise ignore</p>
                 
             </div>
-        `
-    }
+        `,
+  };
 
-    await transporter.sendMail(mailOptions)
-}
+  await transporter.sendMail(mailOptions);
+};
 
 export default sendEmail;

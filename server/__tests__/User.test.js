@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import app from '../app.js'
 import dotenv from 'dotenv'
 
-dotenv.config();
+dotenv.config({quiet: true});
 
 const db = `mongodb+srv://${process.env.DB_DATABASE}:${process.env.DB_PASSWORD}@${process.env.DB_USER}.ma5qp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
 
