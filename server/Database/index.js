@@ -8,10 +8,7 @@ const db = `mongodb+srv://${process.env.DB_DATABASE}:${process.env.DB_PASSWORD}@
 const databaseConnection = {
   getConnect: () => {
     mongoose
-      .connect(db, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      })
+      .connect(db)
       .then(() => console.log("Database Connected Successfully"));
   },
 };
