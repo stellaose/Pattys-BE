@@ -24,11 +24,6 @@ const UserController = {
         return next(new ErrorResponse("Please enter a valid email", 400));
       }
 
-      // if(!validatePassword(password)){
-      //      return next
-      //         (new ErrorResponse('Please enter a valid password', 400))
-      // }
-
       if (password.length < 7) {
         return next(
           new ErrorResponse("Password must not be less than 7 characters", 400)

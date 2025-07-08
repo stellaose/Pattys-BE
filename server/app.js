@@ -4,9 +4,9 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import fileupload from 'express-fileupload';
 // import path from 'path';
-import ErrorMiddleware from './Middleware/Error.js';
+import ErrorMiddleware from './user/Middleware/Error.js';
 
-import Routes from './Routes/index.js'
+import userRoutes from './user/Routes/index.js'
 
 
 const app = express();
@@ -35,6 +35,6 @@ app.use(ErrorMiddleware);
 
 
 // * Routes
-app.use('/v1', Routes)
+app.use('/v1/user', userRoutes)
 
 export default app;
