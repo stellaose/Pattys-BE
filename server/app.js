@@ -30,11 +30,11 @@ app.get('/', (req, res) => {
     });
 });
 
+// * Routes
+app.use('/v1/user', userRoutes)
+
 // + middleware for handling error
 app.use(ErrorMiddleware);
 
-
-// * Routes
-app.use('/v1/user', userRoutes)
 
 export default app;

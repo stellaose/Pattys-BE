@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config({ quiet: true });
 
-const GenerateToken = (savedUser, statusCode, res, token) => {
+const GenerateToken = (savedUser, statusCode, res, token, message) => {
   //+ Options for cookie
   const options = {
     expires: new Date(
@@ -11,7 +11,9 @@ const GenerateToken = (savedUser, statusCode, res, token) => {
     httpOnly: true,
   };
 
-  res.status(statusCode).cookie("token", token, options).json({
+  return res.status(statusCode).cookie("token", token, options).json({
+    status: statusCode,
+    message,
     success: true,
     token,
     savedUser,

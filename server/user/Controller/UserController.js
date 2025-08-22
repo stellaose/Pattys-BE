@@ -3,12 +3,12 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { User } from "../Models/UserModel.js";
-import ErrorResponse from "../Utils/ErrorHandler.js";
+import ErrorResponse from "../../Utils/ErrorHandler.js";
 import cloudinary from "cloudinary";
-import sendEmail from "../Utils/SendEmail.js";
-import validateEmail from "../Utils/ValidateEmail.js";
-import validatePassword from "../Utils/ValidatePassword.js";
-import GenerateToken from "../Utils/GenerateToken.js";
+import sendEmail from "../../Utils/SendEmail.js";
+import validateEmail from "../../Utils/ValidateEmail.js";
+import validatePassword from "../../Utils/ValidatePassword.js";
+import GenerateToken from "../../Utils/GenerateToken.js";
 
 dotenv.config({ quiet: true });
 
@@ -59,7 +59,13 @@ const UserController = {
           expiresIn: "7d",
         });
 
-        GenerateToken(savedUser, 200, res, authToken);
+        GenerateToken(
+          savedUser,
+          200,
+          res,
+          authToken,
+          "User created successfully"
+        );
       }
     } catch (error) {
       return next(error);
@@ -95,7 +101,7 @@ const UserController = {
         expiresIn: "7d",
       });
 
-      GenerateToken(savedUser, 200, res, authToken);
+      GenerateToken(savedUser, 200, res, authToken, "Login successful");
     } catch (error) {
       return next(error);
     }
@@ -131,9 +137,14 @@ const UserController = {
       // const url = `${req.protocol}://${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
       const url = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-
+      console.log(url);
       try {
-        await sendEmail(email, url, "Reset your password");
+        await sendEmail(
+          email,
+          url,
+          "Pattys - Password Reset Request",
+          "Reset your password"
+        );
 
         res.json({
           status: 200,

@@ -1,137 +1,128 @@
-import { Product } from '../Models/ProductModel.js';
-import ErrorResponse from '../Utils/ErrorHandler.js';
-import ApiFeatures from '../Utils/ApiFeatures.js';
-import { Order } from '../Models/OrderModel.js';
+import { Product } from "../Models/ProductModel.js";
+import ErrorResponse from "../../Utils/ErrorHandler.js";
+import ApiFeatures from "../../Utils/ApiFeatures.js";
+import { Order } from "../Models/OrderModel.js";
 
 const ProductController = {
-
-  createProduct : async (req, res, next) => {
-    try{
-      req.body.user = req.savedUser._id
+  createProduct: async (req, res, next) => {
+    try {
+      req.body.user = req.savedUser._id;
       const newProduct = await Product.create(req.body);
 
       return res.json({
         status: 200,
         success: true,
-        message: 'Product successfully created',
-        newProduct
-      })
-    } catch(err){
+        message: "Product successfully created",
+        newProduct,
+      });
+    } catch (err) {
       console.log(err);
-      return next
-        (new ErrorResponse('Server error', 500))
+      return next(new ErrorResponse("Server error", 500));
     }
   },
 
-  updateProduct: async (req, res, next ) => {
-    try{
+  updateProduct: async (req, res, next) => {
+    try {
       const productUpdate = await Product.findByIdAndUpdate(
-                    req.params.id, 
-                    req.body, {
-                      new: true,
-                      runValidator: true,
-                      useFindAndModify: false
-                    });
-    
-      if(!productUpdate){
-                return next
-                    (new ErrorResponse('Product Not Found', 404))
+        req.params.id,
+        req.body,
+        {
+          new: true,
+          runValidator: true,
+          useFindAndModify: false,
+        }
+      );
+
+      if (!productUpdate) {
+        return next(new ErrorResponse("Product Not Found", 404));
       } else {
         return res.json({
           status: 200,
           success: true,
-          message: 'Product updated successfully',
-          productUpdate
-        })
+          message: "Product updated successfully",
+          productUpdate,
+        });
       }
-    }catch(err){
+    } catch (err) {
       console.log(err);
-      return next
-        (new ErrorResponse('Server error', 500))
+      return next(new ErrorResponse("Server error", 500));
     }
   },
 
   getProduct: async (req, res, next) => {
-    try{
+    try {
       const oneProduct = await Product.findById(req.params.id);
-            
-      const getOrder = await Order.findById()
 
-      if(!oneProduct){
-        return next
-          (new ErrorResponse('Product Not Found', 404))
+      const getOrder = await Order.findById();
+
+      if (!oneProduct) {
+        return next(new ErrorResponse("Product Not Found", 404));
       } else {
         return res.json({
           status: 200,
           success: true,
-          oneProduct
-        })
+          oneProduct,
+        });
       }
-    }catch(err){
+    } catch (err) {
       console.log(err);
-      return next
-        (new ErrorResponse('Server error', 500))
+      return next(new ErrorResponse("Server error", 500));
     }
   },
 
   getAllProducts: async (req, res, next) => {
-    try{
+    try {
       const resultPerPage = 12;
       const countProduct = await Product.countDocuments();
 
       const apiFeature = new ApiFeatures(Product.find(), req.query)
-      .search()
-      .filter()
-                
-      apiFeature.pagination(resultPerPage)
-            
-      let findProduct = await apiFeature.query
-            
+        .search()
+        .filter();
+
+      apiFeature.pagination(resultPerPage);
+
+      let findProduct = await apiFeature.query;
+
       let filteredProductCount = findProduct.length;
-            
-      findProduct = await apiFeature.query.clone()
-            
-      if(findProduct){
+
+      findProduct = await apiFeature.query.clone();
+
+      if (findProduct) {
         return res.json({
           status: 200,
           success: true,
           findProduct,
           countProduct,
           resultPerPage,
-          filteredProductCount
-        })
+          filteredProductCount,
+        });
       }
-    } catch(err){
+    } catch (err) {
       console.log(err);
-        return next
-          (new ErrorResponse('Server error', 500))
+      return next(new ErrorResponse("Server error", 500));
     }
   },
 
   deleteProduct: async (req, res, next) => {
-    try{
-
+    try {
       let delProduct = await Product.findByIdAndDelete(req.params.id);
 
-      if(!delProduct){
-        return next
-          (new ErrorResponse('Product Not Found', 404))
+      if (!delProduct) {
+        return next(new ErrorResponse("Product Not Found", 404));
       } else {
         return res.json({
           status: 200,
           success: true,
-          message: 'Product Deleted Successfully'
-        })
+          message: "Product Deleted Successfully",
+        });
       }
+    } catch (err) {
+      console.log(err);
+      return next(new ErrorResponse("Server error", 500));
+    }
+  },
 
-    } catch (err){
-        console.log(err);
-        return next
-          (new ErrorResponse('Server error', 500))
-      }
-    },
-
-  createProductReview : async (req, res, next) => {
+  createProductReview: async (req, res, next) => {
     const { rating, comment, productId } = req.body;
 
     const review = {
@@ -141,19 +132,17 @@ const ProductController = {
       comment,
     };
 
-            
-    try{
+    try {
       const product = await Product.findById(productId);
 
       const isReviewed = product.reviews.find(
         (rev) => rev.user.toString() === req.savedUser._id.toString()
       );
 
-
-      if(isReviewed) {
+      if (isReviewed) {
         product.reviews.forEach((rev) => {
           if (rev.user.toString() === req.savedUser._id.toString())
-          (rev.rating = rating), (rev.comment = comment);
+            ((rev.rating = rating), (rev.comment = comment));
         });
       } else {
         product.reviews.push(review);
@@ -164,39 +153,37 @@ const ProductController = {
 
       product.reviews.forEach((rev) => {
         avg += rev.rating;
-      }) 
-            
-      product.ratings = avg/ product.reviews.length
+      });
 
-      const savedProduct = await product.save({validateBeforeSave: false});
+      product.ratings = avg / product.reviews.length;
+
+      const savedProduct = await product.save({ validateBeforeSave: false });
 
       res.json({
-        status:200,
+        status: 200,
         success: true,
-        savedProduct
+        savedProduct,
       });
-            
-    } catch(err){
-      return next (err)
+    } catch (err) {
+      return next(err);
     }
   },
 
-  getProductReviews : async (req, res, next) => {
+  getProductReviews: async (req, res, next) => {
     try {
       const productReview = await Product.findById(req.query.id);
 
-      if(!productReview){
-        return next
-          (new ErrorResponse('Product Not Found', 404))
+      if (!productReview) {
+        return next(new ErrorResponse("Product Not Found", 404));
       }
 
       res.json({
-        status:200,
+        status: 200,
         success: true,
-        reviews: productReview.reviews
+        reviews: productReview.reviews,
       });
     } catch (err) {
-      return next (err)
+      return next(err);
     }
   },
 
@@ -207,27 +194,27 @@ const ProductController = {
       if (!product) {
         return next(new ErrorHander("Product not found", 404));
       }
-          
+
       const reviews = product.reviews.filter(
         (rev) => rev._id.toString() !== req.query.id.toString()
       );
-          
+
       let avg = 0;
-          
+
       reviews.forEach((rev) => {
         avg += rev.rating;
       });
-          
+
       let ratings = 0;
-          
+
       if (reviews.length === 0) {
         ratings = 0;
       } else {
         ratings = avg / reviews.length;
       }
-          
+
       const numOfReviews = reviews.length;
-          
+
       await Product.findByIdAndUpdate(
         req.query.productId,
         {
@@ -241,16 +228,15 @@ const ProductController = {
           useFindAndModify: false,
         }
       );
-          
+
       res.json({
         status: 200,
         success: true,
-      });          
-            
+      });
     } catch (err) {
-      return next  (err)
+      return next(err);
     }
-  }
-}
+  },
+};
 
 export default ProductController;

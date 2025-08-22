@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import ErrorResponse from "../Utils/ErrorHandler.js";
+import ErrorResponse from "../../Utils/ErrorHandler.js";
 import { User } from "../Models/UserModel.js";
 
 dotenv.config({ quiet: true });
