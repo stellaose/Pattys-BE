@@ -137,7 +137,6 @@ const UserController = {
       // const url = `${req.protocol}://${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
       const url = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-      console.log(url);
       try {
         await sendEmail(
           email,

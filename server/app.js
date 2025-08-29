@@ -12,9 +12,7 @@ import userRoutes from './user/Routes/index.js'
 const app = express();
 
 app.use(cookieParser());
-app.use(fileupload({
-    useTempFiles: true
-}));
+// app.use(fileupload());
 
 
 app.use(cors());
