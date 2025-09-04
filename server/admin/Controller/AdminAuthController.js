@@ -91,7 +91,7 @@ const AdminAuthController = {
       }
 
       const payload = {
-        adminId: savedAdmin._id,
+        adminid: savedAdmin.adminId,
       };
       const authToken = jwt.sign(payload, process.env.SECRET, {
         expiresIn: "7d",
@@ -210,7 +210,7 @@ const AdminAuthController = {
     const { password, newPassword, confirmPassword } = req.body;
 
     try {
-      const savedAdmin = await AdminAuth.findById(req.savedAdmin.id).select(
+      const savedAdmin = await AdminAuth.findOne({ adminId: req.adminId }).select(
         "+password"
       );
 
@@ -244,7 +244,7 @@ const AdminAuthController = {
       if (!oneUser) {
         return next(
           new ErrorResponse(
-            `AdminAuth with id ${req.params.id} does not exist`,
+            `Admin does not exist`,
             400
           )
         );

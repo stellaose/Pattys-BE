@@ -7,7 +7,6 @@ import ErrorResponse from "../../Utils/ErrorHandler.js";
 import cloudinary from "cloudinary";
 import sendEmail from "../../Utils/SendEmail.js";
 import validateEmail from "../../Utils/ValidateEmail.js";
-import validatePassword from "../../Utils/ValidatePassword.js";
 import GenerateToken from "../../Utils/GenerateToken.js";
 import { nanoid } from "nanoid";
 
@@ -35,7 +34,7 @@ const UserController = {
 
       if (findUser) {
         return next(
-          new ErrorResponse("This email exist already Please log in now.", 400)
+          new ErrorResponse("This email already exist. Please log in now.", 400)
         );
       }
 
@@ -55,7 +54,7 @@ const UserController = {
           },
         });
 
-        const payload = { userid: savedUser._id };
+        const payload = { userId: savedUser.userId };
 
         const authToken = jwt.sign(payload, process.env.SECRET, {
           expiresIn: "7d",
@@ -97,7 +96,7 @@ const UserController = {
       }
 
       const payload = {
-        userid: savedUser._id,
+        userid: savedUser.userId,
       };
       const authToken = jwt.sign(payload, process.env.SECRET, {
         expiresIn: "7d",
@@ -219,7 +218,7 @@ const UserController = {
     const { password, newPassword, confirmPassword } = req.body;
 
     try {
-      const savedUser = await User.findById(req.savedUser.id).select(
+        const savedUser = await User.findOne({ userId: req.userId }).select(
         "+password"
       );
 
