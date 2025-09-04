@@ -1,16 +1,10 @@
 import { Router } from 'express';
+import AuthRoute from './AdminAuthRoute.js'
 
-import ProductRoute from './ProductRoutes.js'
-import UserRoute from './UserRoutes.js'
-import OrderRoute from './OrderRoutes.js'
-import PaymentRoute from './PaymentRoutes.js'
 
 const router = Router()
 
-router.use('/user', UserRoute);
-router.use('/product', ProductRoute);
-router.use('/order', OrderRoute)
-router.use('/payment', PaymentRoute)
+router.use('/auth', AuthRoute)
 
 
 export default router

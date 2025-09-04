@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config({ quiet: true });
 
-const GenerateToken = (savedUser, statusCode, res, token, message) => {
+const GenerateToken = (user, statusCode, res, token, message) => {
   //+ Options for cookie
   const options = {
     expires: new Date(
@@ -16,7 +16,7 @@ const GenerateToken = (savedUser, statusCode, res, token, message) => {
     message,
     success: true,
     token,
-    savedUser,
+    details: user,
   });
 };
 

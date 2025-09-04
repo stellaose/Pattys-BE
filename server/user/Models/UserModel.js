@@ -6,6 +6,7 @@ const { isEmail } = validator
 
 const userSchema = new Schema(
   {
+     userId: String,
     firstname: {
       type: String,
       trim: true,
@@ -33,12 +34,7 @@ const userSchema = new Schema(
       type: String,
       required: [false, 'Please enter your password']
     },
-    role: {
-      type: String,
-      default: 'user',
-      enum:['user','admin']
-    },
-    avatar: [ 
+       avatar: [ 
       {
         public_id: {
           type: String,

@@ -9,6 +9,7 @@ import sendEmail from "../../Utils/SendEmail.js";
 import validateEmail from "../../Utils/ValidateEmail.js";
 import validatePassword from "../../Utils/ValidatePassword.js";
 import GenerateToken from "../../Utils/GenerateToken.js";
+import { nanoid } from "nanoid";
 
 dotenv.config({ quiet: true });
 
@@ -43,6 +44,7 @@ const UserController = {
 
       if (hashPassword) {
         const savedUser = await User.create({
+          userId: `user-${nanoid(24).replaceAll("_", "").replaceAll("-", "")}`,
           firstname,
           lastname,
           email,
@@ -309,70 +311,6 @@ const UserController = {
     }
   },
 
-  SingleUser: async (req, res, next) => {
-    try {
-      const oneUser = await User.findById(req.params.id);
-
-      if (!oneUser) {
-        return next(
-          new ErrorResponse(`User with id ${req.params.id} does not exist`, 400)
-        );
-      }
-
-      return res.json({
-        status: 200,
-        success: true,
-        oneUser,
-      });
-    } catch (err) {
-      return next(err);
-    }
-  },
-
-  AllUserInfo: async (req, res, next) => {
-    try {
-      const allUser = await User.find()
-        .select("-password")
-        .select("-confirmPassword")
-        .exec();
-      res.json({
-        status: 200,
-        success: true,
-        allUser,
-      });
-    } catch (err) {
-      return next(err);
-    }
-  },
-
-  updateUserRole: async (req, res, next) => {
-    const { firstname, lastname, email, role } = req.body;
-
-    try {
-      const newUser = {
-        firstname,
-        lastname,
-        email,
-        role,
-      };
-
-      const savedUser = await User.findByIdAndUpdate(req.params.id, newUser, {
-        new: true,
-        runValidators: true,
-        useFindAndModify: false,
-      });
-
-      res.json({
-        status: 200,
-        success: true,
-        message: "User role updated successfully",
-        savedUser,
-      });
-    } catch (err) {
-      return next(err);
-    }
-  },
-
   logout: async (req, res, next) => {
     try {
       res.cookie("token", null, {
@@ -383,25 +321,6 @@ const UserController = {
       res.json({
         status: 200,
         message: "Logged out successfully",
-      });
-    } catch (err) {
-      return next(err);
-    }
-  },
-
-  deleteUser: async (req, res, next) => {
-    try {
-      const oneProfile = await User.findByIdAndDelete(req.params.id);
-
-      if (!oneProfile) {
-        return next(
-          new ErrorResponse(`User with id ${req.params.id} does not exist`, 400)
-        );
-      }
-
-      res.json({
-        status: 200,
-        message: "User deleted successfully",
       });
     } catch (err) {
       return next(err);

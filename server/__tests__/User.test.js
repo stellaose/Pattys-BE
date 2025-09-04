@@ -9,7 +9,7 @@ dotenv.config({ quiet: true });
 
 const mockResetToken = "mock-reset-token";
 const mockHashedToken = "mock-hashed-token";
-  
+
 jest.mock("../user/Models/UserModel.js", () => ({
   User: {
     findOne: jest.fn(),
@@ -42,14 +42,14 @@ jest.mock("../Utils/SendEmail.js", () => ({
 }));
 
 jest.mock("crypto", () => ({
-    randomBytes: () => mockResetToken,
-    createHash: () => ({
-      update: () => ({
-        digest: () => mockHashedToken,
-      }),
+  randomBytes: () => mockResetToken,
+  createHash: () => ({
+    update: () => ({
+      digest: () => mockHashedToken,
+    }),
   }),
-    getHashes: () => [], 
-  }))
+  getHashes: () => [],
+}));
 
 // ? clearing all mocks before each test
 beforeEach(async () => {
@@ -256,7 +256,7 @@ describe("POST /v1/user/auth/forget-password", () => {
       password: "password123",
       resetPasswordToken: undefined,
       resetPasswordExpire: undefined,
-      save: jest.fn().mockResolvedValue(true)
+      save: jest.fn().mockResolvedValue(true),
     };
 
     User.findOne.mockResolvedValue(mockUser);
@@ -268,7 +268,6 @@ describe("POST /v1/user/auth/forget-password", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    // expect(res.body.message).toBe("Password reset email sent successfully");
   });
 
   it("should return an error if email is not found", async () => {

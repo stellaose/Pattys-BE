@@ -1,25 +1,24 @@
 import dotenv from "dotenv";
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { User } from "../Models/UserModel.js";
-import ErrorResponse from "../Utils/ErrorHandler.js";
-import cloudinary from "cloudinary";
-import sendEmail from "../Utils/SendEmail.js";
-import validateEmail from "../Utils/ValidateEmail.js";
-import validatePassword from "../Utils/ValidatePassword.js";
-import GenerateToken from "../Utils/GenerateToken.js";
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
+import ErrorResponse from "../../Utils/ErrorHandler.js";
+import sendEmail from "../../Utils/SendEmail.js";
+import validateEmail from "../../Utils/ValidateEmail.js";
+import GenerateToken from "../../Utils/GenerateToken.js";
+import { AdminAuth } from "../Models/AdminAuthModel.js";
+import { nanoid } from "nanoid";
 
 dotenv.config({ quiet: true });
 
-const UserController = {
+const AdminAuthController = {
   register: async (req, res, next) => {
+    const { firstname, lastname, role, email, password } = req.body;
     try {
-      const { firstname, lastname, email, password } = req.body;
-
-      if (!firstname || !lastname || !email || !password) {
+      if ((!firstname, !lastname, !email, !password, !role)) {
         return next(new ErrorResponse("Please fill all fields", 400));
       }
+
       if (!validateEmail(email)) {
         return next(new ErrorResponse("Please enter a valid email", 400));
       }
@@ -30,9 +29,9 @@ const UserController = {
         );
       }
 
-      const findUser = await User.findOne({ email });
+      const findAdmin = await AdminAuth.findOne({ email });
 
-      if (findUser) {
+      if (findAdmin) {
         return next(
           new ErrorResponse("This email exist already Please log in now.", 400)
         );
@@ -42,24 +41,27 @@ const UserController = {
       const hashPassword = bcrypt.hashSync(password, salt);
 
       if (hashPassword) {
-        const savedUser = await User.create({
+        const savedAdmin = await AdminAuth.create({
+          adminId: `admin-${nanoid(24).replaceAll("_", "")}`,
           firstname,
           lastname,
           email,
+          role,
           password: hashPassword,
-          avatar: {
-            public_id: "public_id",
-            url: "https://res.cloudinary.com/stellaose/image/upload/v1673976402/avatar_etkgih.png",
-          },
         });
 
-        const payload = { userid: savedUser._id };
+        const payload = { adminId: savedAdmin._id };
 
-        const authToken = jwt.sign(payload, process.env.SECRET, {
+        const adminToken = jwt.sign(payload, process.env.SECRET, {
           expiresIn: "7d",
         });
-
-        GenerateToken(savedUser, 200, res, authToken);
+        GenerateToken(
+          savedAdmin,
+          200,
+          res,
+          adminToken,
+          "Admin created successfully"
+        );
       }
     } catch (error) {
       return next(error);
@@ -74,42 +76,40 @@ const UserController = {
         return next(new ErrorResponse("All fields must be provided", 400));
       }
 
-      const savedUser = await User.findOne({ email }).select("+password");
+      const savedAdmin = await AdminAuth.findOne({ email }).select("+password");
 
-      if (!savedUser) {
+      if (!savedAdmin) {
         return next(
-          new ErrorResponse("This email does not exist. Please sign up", 400)
+          new ErrorResponse("Admin does not exist. Please sign up", 400)
         );
       }
 
-      const match = await bcrypt.compare(password, savedUser.password);
+      const match = await bcrypt.compare(password, savedAdmin.password);
 
       if (!match) {
         return next(new ErrorResponse("Password is incorrect", 400));
       }
 
       const payload = {
-        userid: savedUser._id,
+        adminId: savedAdmin._id,
       };
       const authToken = jwt.sign(payload, process.env.SECRET, {
         expiresIn: "7d",
       });
 
-      GenerateToken(savedUser, 200, res, authToken);
+      GenerateToken(savedAdmin, 200, res, authToken, "Login successful");
     } catch (error) {
       return next(error);
     }
   },
 
-  googleLogin: async (req, res, next) => {},
-
   forgetPassword: async (req, res, next) => {
     const { email } = req.body;
 
     try {
-      const savedUser = await User.findOne({ email });
+      const savedAdmin = await AdminAuth.findOne({ email });
 
-      if (!savedUser) {
+      if (!savedAdmin) {
         return next(new ErrorResponse("This email does not exist", 401));
       }
 
@@ -117,34 +117,37 @@ const UserController = {
       const resetToken = crypto.randomBytes(20).toString("hex");
 
       // + Hash and set to resetPasswordToken
-      savedUser.resetPasswordToken = crypto
+      savedAdmin.resetPasswordToken = crypto
         .createHash("sha256")
         .update(resetToken)
         .digest("hex");
 
       // - Set token expire time
-      savedUser.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
+      savedAdmin.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
 
-      await savedUser.save({ validateBeforeSave: false });
+      await savedAdmin.save({ validateBeforeSave: false });
 
       // ? create password reset url
-      // const url = `${req.protocol}://${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-      const url = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-
+      const url = `${process.env.ADMIN_CLIENT_URL}/reset-password/${resetToken}`;
       try {
-        await sendEmail(email, url, "Reset your password");
+        await sendEmail(
+          email,
+          url,
+          "Pattys - Password Reset Request",
+          "Reset your password"
+        );
 
         res.json({
           status: 200,
           success: true,
-          message: `Email sent to ${savedUser.email}`,
+          message: `Email sent to ${savedAdmin.email}`,
         });
       } catch (error) {
-        savedUser.resetPasswordToken = undefined;
-        savedUser.resetPasswordExpire = undefined;
+        savedAdmin.resetPasswordToken = undefined;
+        savedAdmin.resetPasswordExpire = undefined;
 
-        await savedUser.save({ validateBeforeSave: false });
+        await savedAdmin.save({ validateBeforeSave: false });
         return next(new ErrorResponse(error.message, 500));
       }
     } catch (error) {
@@ -163,12 +166,12 @@ const UserController = {
         .update(token)
         .digest("hex");
 
-      const savedUser = await User.findOne({
+      const savedAdmin = await AdminAuth.findOne({
         resetPasswordToken,
         resetPasswordExpire: { $gt: Date.now() },
       });
 
-      if (!savedUser) {
+      if (!savedAdmin) {
         return next(
           new ErrorResponse(
             "Password reset token is invalid or has expired. Please try again.",
@@ -185,19 +188,19 @@ const UserController = {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      savedUser.password = hashedPassword;
+      savedAdmin.password = hashedPassword;
 
-      savedUser.resetPasswordToken = undefined;
-      savedUser.resetPasswordExpire = undefined;
+      savedAdmin.resetPasswordToken = undefined;
+      savedAdmin.resetPasswordExpire = undefined;
 
-      await savedUser.save();
+      await savedAdmin.save();
 
-      const payload = { userid: savedUser._id };
+      const payload = { adminId: savedAdmin._id };
       const authToken = await jwt.sign(payload, process.env.SECRET, {
         expiresIn: "7d",
       });
 
-      GenerateToken(savedUser, 200, res, authToken);
+      GenerateToken(savedAdmin, 200, res, authToken);
     } catch (error) {
       return next(error);
     }
@@ -207,11 +210,11 @@ const UserController = {
     const { password, newPassword, confirmPassword } = req.body;
 
     try {
-      const savedUser = await User.findById(req.savedUser.id).select(
+      const savedAdmin = await AdminAuth.findById(req.savedAdmin.id).select(
         "+password"
       );
 
-      const isMatch = await bcrypt.compare(password, savedUser.password);
+      const isMatch = await bcrypt.compare(password, savedAdmin.password);
 
       if (!isMatch) {
         return next(new ErrorResponse("Old password is incorrect", 400));
@@ -224,76 +227,11 @@ const UserController = {
       const salt = bcrypt.genSaltSync(10);
       const hashPassword = bcrypt.hashSync(newPassword, salt);
 
-      savedUser.password = hashPassword;
+      savedAdmin.password = hashPassword;
 
-      await savedUser.save();
+      await savedAdmin.save();
 
-      GenerateToken(savedUser, 200, res);
-    } catch (error) {
-      return next(error);
-    }
-  },
-
-  updateUser: async (req, res, next) => {
-    const { firstname, lastname, email } = req.body;
-
-    try {
-      const newUser = {
-        firstname,
-        lastname,
-        email,
-      };
-
-      if (req.body.avatar !== "") {
-        const savedUser = await User.findById(req.savedUser.id);
-
-        const imageId = savedUser.avatar[0].public_id;
-
-        await cloudinary.v2.uploader.destroy(imageId);
-
-        const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
-          folder: "avatar",
-          quality: 60,
-          width: "auto",
-          crop: "scale",
-        });
-
-        newUser.avatar = {
-          public_id: myCloud.public_id,
-          url: myCloud.secure_url,
-        };
-      }
-
-      const savedUser = await User.findByIdAndUpdate(
-        req.savedUser.id,
-        newUser,
-        {
-          new: true,
-          runValidators: true,
-          useFindAndModify: false,
-        }
-      );
-
-      res.json({
-        status: 200,
-        success: true,
-        message: "Profile updated successfully",
-        savedUser,
-      });
-    } catch (err) {
-      return next(err);
-    }
-  },
-
-  UserInfo: async (req, res, next) => {
-    try {
-      const thisUser = await User.findById(req.savedUser.id);
-
-      res.json({
-        status: 200,
-        success: true,
-        thisUser,
-      });
+      GenerateToken(savedAdmin, 200, res);
     } catch (error) {
       return next(error);
     }
@@ -301,11 +239,14 @@ const UserController = {
 
   SingleUser: async (req, res, next) => {
     try {
-      const oneUser = await User.findById(req.params.id);
+      const oneUser = await AdminAuth.findById(req.params.id);
 
       if (!oneUser) {
         return next(
-          new ErrorResponse(`User with id ${req.params.id} does not exist`, 400)
+          new ErrorResponse(
+            `AdminAuth with id ${req.params.id} does not exist`,
+            400
+          )
         );
       }
 
@@ -321,7 +262,7 @@ const UserController = {
 
   AllUserInfo: async (req, res, next) => {
     try {
-      const allUser = await User.find()
+      const allUser = await AdminAuth.find()
         .select("-password")
         .select("-confirmPassword")
         .exec();
@@ -346,17 +287,21 @@ const UserController = {
         role,
       };
 
-      const savedUser = await User.findByIdAndUpdate(req.params.id, newUser, {
-        new: true,
-        runValidators: true,
-        useFindAndModify: false,
-      });
+      const savedAdmin = await AdminAuth.findByIdAndUpdate(
+        req.params.id,
+        newUser,
+        {
+          new: true,
+          runValidators: true,
+          useFindAndModify: false,
+        }
+      );
 
       res.json({
         status: 200,
         success: true,
-        message: "User role updated successfully",
-        savedUser,
+        message: "AdminAuth role updated successfully",
+        savedAdmin,
       });
     } catch (err) {
       return next(err);
@@ -381,17 +326,20 @@ const UserController = {
 
   deleteUser: async (req, res, next) => {
     try {
-      const oneProfile = await User.findByIdAndDelete(req.params.id);
+      const oneProfile = await AdminAuth.findByIdAndDelete(req.params.id);
 
       if (!oneProfile) {
         return next(
-          new ErrorResponse(`User with id ${req.params.id} does not exist`, 400)
+          new ErrorResponse(
+            `AdminAuth with id ${req.params.id} does not exist`,
+            400
+          )
         );
       }
 
       res.json({
         status: 200,
-        message: "User deleted successfully",
+        message: "AdminAuth deleted successfully",
       });
     } catch (err) {
       return next(err);
@@ -399,4 +347,4 @@ const UserController = {
   },
 };
 
-export default UserController;
+export default AdminAuthController;
