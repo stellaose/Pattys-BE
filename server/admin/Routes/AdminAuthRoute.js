@@ -9,7 +9,8 @@ router.post("/login", AdminAuthController.login);
 router.post("/forget-password", AdminAuthController.forgetPassword);
 router.put("/reset-password/:token", AdminAuthController.resetPassword);
 router.put("/update-password", AuthAdmin, AdminAuthController.updatePassword);
-router.get("/logout", AdminAuthController.logout);
+
+router.get("/me", AuthAdmin, AdminAuthController.UserInfo);
 router.get(
   "/single-user/:id",
   AuthAdmin,
@@ -34,5 +35,7 @@ router.delete(
   AllowedRoles(["admin", "super admin"]),
   AdminAuthController.deleteUser
 );
+
+router.get("/logout", AdminAuthController.logout);
 
 export default router;

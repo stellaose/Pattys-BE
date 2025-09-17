@@ -5,22 +5,6 @@ import ErrorResponse from "../Utils/ErrorHandler.js";
 
 dotenv.config({ quiet: true });
 
-// export const Auth = async (req, res, next) => {
-//   const bearerTokenFromHeader = req.headers.authorization;
-
-//   if (!bearerTokenFromHeader) {
-//     return next(new ErrorResponse("Please login to access this resource", 400));
-//   }
-
-//   const decodedData = jwt.verify(bearerTokenFromHeader, process.env.SECRET);
-//       console.log(decodedData)
-
-//   req.details = await User.findById(decodedData.userid);
-
-//   next();
-// };
-
-
 export const Auth = async (req, res, next) => {
 try {
     const bearerTokenFromHeader = req.header('Authorization');

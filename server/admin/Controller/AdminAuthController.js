@@ -237,6 +237,19 @@ const AdminAuthController = {
     }
   },
 
+  UserInfo: async (req, res, next) => {
+      try {
+        const thisAdmin = await Admin.findOne({adminId: req.adminId});
+  
+        res.json({
+          status: 200,
+          success: true,
+          thisAdmin,
+        });
+      } catch (error) {
+        return next(error);
+      }
+    },
   SingleUser: async (req, res, next) => {
     try {
       const oneUser = await AdminAuth.findById(req.params.id);

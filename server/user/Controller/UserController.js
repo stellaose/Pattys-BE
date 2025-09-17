@@ -256,7 +256,7 @@ const UserController = {
       };
 
       if (req.body.avatar !== "") {
-        const savedUser = await User.findById(req.savedUser.id);
+        const savedUser = await User.findOne({ userId: req.userId });
 
         const imageId = savedUser.avatar[0].public_id;
 
@@ -298,7 +298,8 @@ const UserController = {
 
   UserInfo: async (req, res, next) => {
     try {
-      const thisUser = await User.findById(req.savedUser.id);
+      const thisUser = await User.findOne({ userId: req.userId });
+      
 
       res.json({
         status: 200,
